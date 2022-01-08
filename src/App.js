@@ -1,15 +1,15 @@
-import React from 'react';
-import './style.css';
-import Web3Modal from 'web3modal';
-import { useEffect, useState } from 'react';
-import contract_abi from './network_abi.json';
-import database_abi from './database_abi.json';
-import ListItem from './ListItem';
+import React from "react";
+import "./style.css";
+import Web3Modal from "web3modal";
+import { useEffect, useState } from "react";
+import contract_abi from "./network_abi.json";
+import database_abi from "./database_abi.json";
+import ListItem from "./ListItem";
 
-const ethers = require('ethers');
+const ethers = require("ethers");
 
-const contract_address = '0x622Ab6481AB06A905275c5789E59649e3F145204';
-const database_address = '0xE2e151ee35f2bf21d2771EbDFdd2cd48aF2B1761';
+const contract_address = "0x622Ab6481AB06A905275c5789E59649e3F145204";
+const database_address = "0xE2e151ee35f2bf21d2771EbDFdd2cd48aF2B1761";
 
 export default function App() {
   const [posts, setPosts] = useState([]);
@@ -21,13 +21,13 @@ export default function App() {
       const web3Modal = new Web3Modal();
       const connection = await web3Modal.connect();
       const provider = new ethers.providers.Web3Provider(connection);
-      await provider.send('eth_requestAccounts', []);
+      await provider.send("eth_requestAccounts", []);
       window.provider = provider;
     }
 
     setProvider(window.provider);
 
-    window.ethereum.on('accountsChanged', function (accounts) {
+    window.ethereum.on("accountsChanged", function (accounts) {
       // Time to reload your interface with accounts[0]!
     });
   }
@@ -83,9 +83,9 @@ export default function App() {
         address: post[0].A_UserAddress,
         username: post[0].A_UserName,
       };
-      posts_arr.push(post_detail.reverse());
+      posts_arr.push(post_detail);
     }
-    setPosts(posts_arr);
+    setPosts(posts_arr.reverse());
     setLoading(false);
   };
 
