@@ -33,8 +33,10 @@ export default function App() {
       setTotalPages(totalPages);
       setHasNextPage(hasNextPage);
       setHasPreviousPage(hasPreviousPage);
+
+      getPosts();
     }
-  }, [totalDocs]);
+  }, [totalDocs, page]);
 
   async function connectWallet() {
     if (!window.provider) {
@@ -85,6 +87,7 @@ export default function App() {
   };
 
   const getPosts = async (e) => {
+    setLoading(true);
     const databaseContract = new ethers.Contract(
       database_address,
       database_abi,
@@ -98,7 +101,6 @@ export default function App() {
     const start = page * pageSize - pageSize;
     const end = parseInt(page * pageSize);
 
-    console.log({ start, end, totalPosts });
     for (let i = start; i < end; i++) {
       const record = await databaseContract.IdList(i);
       const post = await databaseContract.Table(record);
@@ -209,17 +211,42 @@ export default function App() {
             <button
               className="bg-yellow-500 rounded-md py-1 px-3"
               disabled={!hasPreviousPage}
+              onClick={prevPage}
             >
               Prev
             </button>
-            {page - 3 > 0 && <button>...</button>}
-            {page - 2 > 0 && <button>{page - 1}</button>}
-            <button>{page}</button>
-            {page + 2 < totalPages && <button>{page + 1}</button>}
-            {page + 3 > 0 && <button>...</button>}
+            <button disabled className="bg-gray-200 rounded-md py-1 px-3">
+              ...
+            </button>
+
+            {page - 1 > 0 && (
+              <button
+                className="bg-yellow-500 rounded-md py-1 px-3"
+                onClick={() => navigate(page - 1)}
+              >
+                {page - 1}
+              </button>
+            )}
+            <button disabled className="bg-gray-300 rounded-md py-1 px-3">
+              {page}
+            </button>
+            {page + 1 < totalPages && (
+              <button
+                className="bg-yellow-500 rounded-md py-1 px-3"
+                onClick={() => navigate(page + 1)}
+              >
+                {page + 1}
+              </button>
+            )}
+            {page + 3 > 0 && (
+              <button disabled className="bg-gray-200 rounded-md py-1 px-3">
+                ...
+              </button>
+            )}
             <button
               className="bg-yellow-500 rounded-md py-1 px-3"
               disabled={!hasNextPage}
+              onClick={nextPage}
             >
               Next
             </button>
