@@ -1,10 +1,12 @@
-import React from "react";
 import "./style.css";
-import Web3Modal from "web3modal";
+
 import { useEffect, useState } from "react";
+
+import ListItem from "./ListItem";
+import React from "react";
+import Web3Modal from "web3modal";
 import contract_abi from "./network_abi.json";
 import database_abi from "./database_abi.json";
-import ListItem from "./ListItem";
 
 const ethers = require("ethers");
 
@@ -15,6 +17,24 @@ export default function App() {
   const [posts, setPosts] = useState([]);
   const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pageSize] = useState(5);
+  const [page, setPage] = useState(1);
+  const [totalDocs, setTotalDocs] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
+
+  useEffect(() => {
+    if (totalDocs > 0) {
+      const totalPages = (totalDocs + 1) / pageSize;
+      const hasNextPage = totalDocs - page * pageSize > 0;
+      const hasPreviousPage = page * pageSize - pageSize > 0;
+
+      setTotalPages(totalPages);
+      setHasNextPage(hasNextPage);
+      setHasPreviousPage(hasPreviousPage);
+    }
+  }, [totalDocs]);
 
   async function connectWallet() {
     if (!window.provider) {
@@ -72,10 +92,14 @@ export default function App() {
     );
 
     let totalPosts = await databaseContract.GetLength();
+    setTotalDocs(Number(totalPosts.toString()));
     // Fetch posts
     let posts_arr = [];
-    for (let i = 0; i < parseInt(totalPosts.toString()); i++) {
-      console.log(i);
+    const start = page * pageSize - pageSize;
+    const end = parseInt(page * pageSize);
+
+    console.log({ start, end, totalPosts });
+    for (let i = start; i < end; i++) {
       const record = await databaseContract.IdList(i);
       const post = await databaseContract.Table(record);
       const post_detail = {
@@ -97,7 +121,19 @@ export default function App() {
 
   useEffect(() => {
     connectWallet();
-  }, [window]);
+  }, []);
+
+  const nextPage = () => {
+    setPage(page + 1);
+  };
+
+  const prevPage = () => {
+    setPage(page - 1);
+  };
+
+  const navigate = (page) => {
+    setPage(page);
+  };
 
   return (
     <div>
@@ -169,6 +205,25 @@ export default function App() {
               />
             ))}
           </ul>
+          <div className="mt-2 py-2 flex justify-center space-x-2">
+            <button
+              className="bg-yellow-500 rounded-md py-1 px-3"
+              disabled={!hasPreviousPage}
+            >
+              Prev
+            </button>
+            {page - 3 > 0 && <button>...</button>}
+            {page - 2 > 0 && <button>{page - 1}</button>}
+            <button>{page}</button>
+            {page + 2 < totalPages && <button>{page + 1}</button>}
+            {page + 3 > 0 && <button>...</button>}
+            <button
+              className="bg-yellow-500 rounded-md py-1 px-3"
+              disabled={!hasNextPage}
+            >
+              Next
+            </button>
+          </div>
         </div>
       ) : (
         <p>Loading posts</p>
